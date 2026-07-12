@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Turnos Digitales | Secretaría de Tránsito de Valledupar</title>
+
+<!-- FontAwesome (iconos) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- Chart.js (gráficas) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- SheetJS (exportar a Excel) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+/* =========================================================
+   VARIABLES DE MARCA - SECRETARÍA DE TRÁNSITO DE VALLEDUPAR
+   ========================================================= */
+:root{
+  --azul-oscuro:#0a1f44;
+  --azul-oscuro-2:#0f2c5c;
+  --azul-medio:#173a73;
+  --verde-neon:#39ff8f;
+  --verde-neon-fuerte:#00e676;
+  --blanco:#ffffff;
+  --gris-100:#f4f7fb;
+  --gris-200:#e6ebf2;
+  --gris-400:#9aa7bd;
+  --gris-700:#3c4a63;
+  --rojo:#ff4d5e;
+  --amarillo:#ffb020;
+  --radio:14px;
+  --sombra:0 8px 24px rgba(10,31,68,0.12);
+  --font-display:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+
+html,body{
+  height:100%;
+  font-family:var(--font-display);
+  background:var(--gris-100);
+  color:var(--azul-oscuro);
+  -webkit-font-smoothing:antialiased;
+}
+
+body{
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  padding-bottom:74px; /* espacio para bottom nav */
+}
+
+button{font-family:inherit; cursor:pointer; border:none;}
+input,select{font-family:inherit;}
+::selection{background:var(--verde-neon); color:var(--azul-oscuro);}
+
+/* =========================
+   TOPBAR
+   ========================= */
+.topbar{
+  background:linear-gradient(120deg,var(--azul-oscuro) 0%, var(--azul-medio) 100%);
+  color:var(--blanco);
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  position:sticky;
+  top:0;
+  z-index:50;
+  box-shadow:var(--sombra);
+}
+.topbar .escudo{
+  width:42px;height:42px;border-radius:10px;
+  background:var(--verde-neon);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--azul-oscuro); font-size:20px; font-weight:800;
+  flex-shrink:0;
+}
+.topbar h1{font-size:15px; line-height:1.25; font-weight:700; letter-spacing:.2px;}
+.topbar span{display:block; font-size:11px; font-weight:400; color:var(--verde-neon); letter-spacing:.4px;}
+.topbar .reloj{margin-left:auto; text-align:right; font-size:12px; opacity:.85; white-space:nowrap;}
+.topbar .reloj b{display:block; font-size:16px; font-weight:700;}
+
+/* Foto de perfil circular en el banner */
+.avatar-perfil{
+  width:44px; height:44px; border-radius:50%;
+  border:2px solid var(--verde-neon);
+  object-fit:cover; flex-shrink:0; cursor:pointer;
+  background:var(--azul-medio);
+  box-shadow:0 0 0 3px rgba(57,255,143,.15);
+  transition:.15s;
+}
+.avatar-perfil:hover{transform:scale(1.06); box-shadow:0 0 0 4px rgba(57,255,143,.3);}
+.avatar-perfil-input{display:none;}
+
+/* =========================
+   VISTAS
+   ========================= */
+.vista{display:none; flex:1; width:100%; animation:fadeIn .25s ease;}
+.vista.activa{display:block;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+.contenedor{max-width:1200px; margin:0 auto; padding:18px;}
+
+.tarjeta{
+  background:var(--blanco);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:22px;
+  margin-bottom:16px;
+}
+
+.titulo-seccion{
+  display:flex; align-items:center; gap:10px;
+  margin-bottom:18px;
+}
+.titulo-seccion i{
+  width:40px;height:40px;border-radius:10px;
+  background:var(--azul-oscuro); color:var(--verde-neon);
+  display:flex; align-items:center; justify-content:center; font-size:17px;
+}
+.titulo-seccion h2{font-size:19px; color:var(--azul-oscuro);}
+.titulo-seccion small{display:block; color:var(--gris-400); font-size:12px; font-weight:500;}
+
+/* =========================
+   FORMULARIO REGISTRO
+   ========================= */
+.grid-form{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:16px;
+}
+.campo{display:flex; flex-direction:column; gap:6px;}
+.campo label{font-size:12.5px; font-weight:700; color:var(--azul-oscuro); text-transform:uppercase; letter-spacing:.3px;}
+.campo label i{color:var(--verde-neon-fuerte); margin-right:5px;}
+.campo input, .campo select{
+  padding:12px 14px;
+  border:2px solid var(--gris-200);
+  border-radius:10px;
+  font-size:14.5px;
+  background:var(--gris-100);
+  color:var(--azul-oscuro);
+  transition:.15s;
+}
+.campo input:focus, .campo select:focus{
+  outline:none;
+  border-color:var(--verde-neon-fuerte);
+  background:var(--blanco);
+  box-shadow:0 0 0 4px rgba(0,230,118,.15);
+}
+.campo .error-msg{font-size:11.5px; color:var(--rojo); font-weight:600; min-height:14px;}
+.campo input.invalido, .campo select.invalido{border-color:var(--rojo);}
+.campo input.valido{border-color:var(--verde-neon-fuerte);}
+
+.badge-edad{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--azul-oscuro); color:var(--verde-neon);
+  padding:8px 14px; border-radius:20px; font-size:13px; font-weight:700;
+  width:fit-content;
+}
+
+.btn{
+  padding:14px 22px;
+  border-radius:12px;
+  font-weight:700;
+  font-size:14.5px;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  transition:.15s;
+}
+.btn-primario{
+  background:var(--verde-neon-fuerte);
+  color:var(--azul-oscuro);
+  box-shadow:0 6px 16px rgba(0,230,118,.35);
+}
+.btn-primario:hover{transform:translateY(-2px); box-shadow:0 10px 20px rgba(0,230,118,.45);}
+.btn-oscuro{background:var(--azul-oscuro); color:var(--blanco);}
+.btn-oscuro:hover{background:var(--azul-medio);}
+.btn-outline{background:transparent; border:2px solid var(--azul-oscuro); color:var(--azul-oscuro);}
+.btn-peligro{background:var(--rojo); color:var(--blanco);}
+.btn-amarillo{background:var(--amarillo); color:var(--azul-oscuro);}
+.btn-bloque{width:100%;}
+.btn:disabled{opacity:.5; cursor:not-allowed; transform:none !important;}
+
+.acciones-form{display:flex; justify-content:flex-end; margin-top:20px;}
+
+/* Ticket resultante */
+.ticket-generado{
+  display:none;
+  text-align:center;
+  padding:34px 20px;
+  border-radius:var(--radio);
+  background:linear-gradient(135deg,var(--azul-oscuro),var(--azul-medio));
+  color:var(--blanco);
+  position:relative;
+  overflow:hidden;
+}
+.ticket-generado.mostrar{display:block; animation:fadeIn .35s ease;}
+.ticket-generado .num{
+  font-size:64px; font-weight:900; color:var(--verde-neon);
+  letter-spacing:2px; margin:10px 0;
+  text-shadow:0 0 25px rgba(57,255,143,.6);
+}
+.ticket-generado p{opacity:.85; font-size:14px;}
+.ticket-generado .info-extra{margin-top:14px; font-size:13px; opacity:.75;}
+
+/* =========================
+   BOTTOM NAV
+   ========================= */
+.bottom-nav{
+  position:fixed; bottom:0; left:0; right:0;
+  background:var(--azul-oscuro);
+  display:flex;
+  z-index:100;
+  box-shadow:0 -6px 20px rgba(0,0,0,.25);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-item{
+  flex:1;
+  background:transparent;
+  color:var(--gris-400);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px;
+  padding:11px 4px 9px;
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:.2px;
+  position:relative;
+  transition:.15s;
+}
+.nav-item i{font-size:18px;}
+.nav-item.activo{color:var(--verde-neon);}
+.nav-item.activo::before{
+  content:'';
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:34px; height:3px; border-radius:0 0 4px 4px;
+  background:var(--verde-neon);
+}
+
+/* =========================
+   VISOR / PANTALLA TV
+   ========================= */
+.visor-wrap{
+  background:var(--azul-oscuro);
+  min-height:calc(100vh - 74px);
+  color:var(--blanco);
+  padding:20px;
+}
+.visor-header{text-align:center; margin-bottom:18px;}
+.visor-header h2{color:var(--verde-neon); font-size:22px; letter-spacing:1px;}
+.visor-header p{color:var(--gris-400); font-size:13px; margin-top:4px;}
+
+.visor-grid{
+  display:grid;
+  grid-template-columns:1.2fr 1fr 1fr 1.1fr;
+  gap:18px;
+}
+@media (max-width:1150px){
+  .visor-grid{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:900px){
+  .visor-grid{grid-template-columns:1fr;}
+}
+
+/* Contenedor de videos institucionales del visor */
+.videos-box{display:flex; flex-direction:column; gap:10px;}
+.video-player-wrap{
+  position:relative; width:100%; aspect-ratio:16/9;
+  background:#000; border-radius:10px; overflow:hidden;
+  border:1px solid rgba(255,255,255,.1);
+}
+.video-player-wrap video{width:100%; height:100%; object-fit:cover; display:block;}
+.video-player-vacio{
+  width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  color:var(--gris-400); gap:8px; font-size:12.5px; text-align:center; padding:10px;
+}
+.video-player-vacio i{font-size:26px; color:var(--verde-neon);}
+.video-contador{font-size:11.5px; color:var(--gris-400); text-align:center;}
+
+.panel-visor{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:var(--radio);
+  padding:18px;
+}
+.panel-visor h3{
+  font-size:13px; letter-spacing:1.5px; color:var(--verde-neon);
+  text-transform:uppercase; margin-bottom:14px;
+  display:flex; align-items:center; gap:8px;
+}
+
+.turno-actual-box{
+  text-align:center;
+  padding:26px 10px;
+  border-radius:12px;
+  background:radial-gradient(circle at top,rgba(57,255,143,.15),transparent 70%);
+  border:2px solid var(--verde-neon);
+  animation:pulso 1.8s infinite;
+}
+@keyframes pulso{
+  0%{box-shadow:0 0 0 0 rgba(57,255,143,.4);}
+  70%{box-shadow:0 0 0 18px rgba(57,255,143,0);}
+  100%{box-shadow:0 0 0 0 rgba(57,255,143,0);}
+}
+.turno-actual-box .num-grande{
+  font-size:72px; font-weight:900; color:var(--verde-neon);
+  line-height:1; margin-bottom:8px;
+}
+.turno-actual-box .nombre-grande{font-size:22px; font-weight:700; margin-bottom:6px;}
+.turno-actual-box .detalle-grande{font-size:14px; color:var(--gris-400); margin-bottom:10px;}
+.turno-actual-box .caja-grande{
+  display:inline-block; margin-top:6px;
+  background:var(--verde-neon); color:var(--azul-oscuro);
+  padding:8px 18px; border-radius:24px; font-weight:800; font-size:15px;
+}
+.turno-actual-vacio{text-align:center; padding:40px 10px; color:var(--gris-400);}
+
+.lista-turnos{list-style:none; display:flex; flex-direction:column; gap:8px; max-height:420px; overflow-y:auto;}
+.lista-turnos li{
+  display:flex; justify-content:space-between; align-items:center;
+  background:rgba(255,255,255,.05);
+  padding:10px 14px; border-radius:9px;
+  font-size:14px;
+}
+.lista-turnos li .tk{font-weight:800; color:var(--verde-neon);}
+.lista-turnos li .cj{font-size:11px; color:var(--gris-400);}
+.vacio-lista{color:var(--gris-400); font-size:13px; text-align:center; padding:16px;}
+
+/* =========================
+   CAJAS
+   ========================= */
+.selector-cajas{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:14px;
+}
+.caja-card{
+  background:var(--blanco);
+  border:2px solid var(--gris-200);
+  border-radius:var(--radio);
+  padding:22px 14px;
+  text-align:center;
+  transition:.15s;
+}
+.caja-card:hover{border-color:var(--verde-neon-fuerte); transform:translateY(-3px);}
+.caja-card i{font-size:26px; color:var(--azul-oscuro); margin-bottom:10px;}
+.caja-card h3{font-size:14.5px; color:var(--azul-oscuro);}
+.caja-card small{color:var(--gris-400); font-size:11.5px;}
+
+.login-caja-modal{
+  position:fixed; inset:0; background:rgba(10,31,68,.6);
+  display:none; align-items:center; justify-content:center;
+  z-index:200; padding:20px; backdrop-filter:blur(3px);
+}
+.login-caja-modal.mostrar{display:flex;}
+.modal-box{
+  background:var(--blanco); border-radius:var(--radio);
+  padding:26px; width:100%; max-width:340px;
+  box-shadow:0 20px 50px rgba(0,0,0,.3);
+}
+.modal-box h3{margin-bottom:16px; color:var(--azul-oscuro); display:flex; align-items:center; gap:8px;}
+.modal-box .cerrar-modal{float:right; background:none; color:var(--gris-400); font-size:18px;}
+
+.panel-caja-activa{display:none;}
+.panel-caja-activa.mostrar{display:block;}
+
+.caja-info-header{
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--azul-oscuro); color:var(--blanco);
+  padding:16px 20px; border-radius:var(--radio); margin-bottom:16px;
+}
+.caja-info-header h3{color:var(--verde-neon); font-size:16px;}
+.caja-info-header .salir-caja{background:rgba(255,255,255,.12); color:var(--blanco); padding:8px 14px; border-radius:8px; font-size:12.5px;}
+
+.turno-caja-display{
+  text-align:center; padding:30px 16px;
+  background:var(--gris-100); border-radius:var(--radio);
+  border:2px dashed var(--gris-200);
+  margin-bottom:16px;
+}
+.turno-caja-display .num{font-size:48px; font-weight:900; color:var(--azul-oscuro);}
+.turno-caja-display .nombre{font-size:17px; font-weight:700; margin:6px 0;}
+.turno-caja-display .meta{font-size:13px; color:var(--gris-700); margin-bottom:4px;}
+.turno-caja-display .espera{
+  display:inline-block; margin-top:10px; font-size:12.5px; font-weight:700;
+  color:var(--rojo); background:#ffe6e9; padding:5px 12px; border-radius:20px;
+}
+
+.acciones-caja{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.acciones-caja .btn-bloque{grid-column:1/-1;}
+
+.stat-mini{
+  display:flex; justify-content:space-between; margin-top:16px;
+  background:var(--gris-100); border-radius:10px; padding:12px 16px; font-size:13px;
+}
+.stat-mini b{color:var(--azul-oscuro); font-size:17px; display:block;}
+
+/* =========================
+   ADMIN
+   ========================= */
+.login-admin-wrap{max-width:380px; margin:60px auto;}
+.admin-oculto{display:none;}
+.admin-oculto.mostrar{display:block;}
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:14px; margin-bottom:20px;
+}
+.stat-card{
+  background:var(--blanco); border-radius:12px; padding:18px;
+  box-shadow:var(--sombra); border-left:5px solid var(--verde-neon-fuerte);
+}
+.stat-card .val{font-size:28px; font-weight:900; color:var(--azul-oscuro);}
+.stat-card .lbl{font-size:12px; color:var(--gris-700); font-weight:600; margin-top:2px;}
+.stat-card i{float:right; color:var(--verde-neon-fuerte); font-size:20px;}
+
+.charts-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;
+}
+@media (max-width:800px){.charts-grid{grid-template-columns:1fr;}}
+.chart-box{background:var(--blanco); border-radius:var(--radio); box-shadow:var(--sombra); padding:18px; height:300px;}
+.chart-box h4{font-size:13px; color:var(--azul-oscuro); margin-bottom:10px; text-transform:uppercase; letter-spacing:.4px;}
+
+.tabs-admin{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+.tab-btn{
+  padding:10px 16px; border-radius:9px; background:var(--gris-200); color:var(--azul-oscuro);
+  font-size:13px; font-weight:700;
+}
+.tab-btn.activo{background:var(--azul-oscuro); color:var(--verde-neon);}
+.panel-tab{display:none;}
+.panel-tab.activo{display:block;}
+
+.filtros-tabla{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
+.filtros-tabla input,.filtros-tabla select{
+  padding:10px 12px; border:2px solid var(--gris-200); border-radius:9px; font-size:13px; background:var(--gris-100);
+}
+.tabla-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--gris-200);}
+table{width:100%; border-collapse:collapse; font-size:12.5px; min-width:1100px;}
+thead th{
+  background:var(--azul-oscuro); color:var(--verde-neon);
+  padding:10px 12px; text-align:left; position:sticky; top:0; white-space:nowrap;
+}
+tbody td{padding:9px 12px; border-bottom:1px solid var(--gris-200); white-space:nowrap;}
+tbody tr:hover{background:var(--gris-100);}
+.pill{padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;}
+.pill-espera{background:#fff3cd; color:#8a6300;}
+.pill-llamado{background:#cfe2ff; color:#084298;}
+.pill-atendido{background:#d1f7dd; color:#0a7a2e;}
+
+.botones-admin{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;}
+
+.config-cajas-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;}
+.config-caja-item{background:var(--gris-100); border-radius:10px; padding:14px;}
+.config-caja-item label{font-size:12px; font-weight:700; color:var(--azul-oscuro); display:block; margin-bottom:6px;}
+.config-caja-item .fila{display:flex; gap:8px;}
+.config-caja-item input{flex:1; padding:9px 10px; border-radius:8px; border:2px solid var(--gris-200); font-size:13px;}
+
+/* Gestor de videos institucionales (admin) */
+.videos-admin-lista{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+.video-admin-item{
+  display:flex; align-items:center; gap:10px;
+  background:var(--gris-100); border-radius:9px; padding:10px 12px; font-size:12.5px;
+}
+.video-admin-item span{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.video-admin-item button{background:none; color:var(--rojo); font-size:15px;}
+.fila-agregar-video{display:flex; gap:10px; margin-top:6px;}
+.fila-agregar-video input{flex:1; padding:11px 12px; border:2px solid var(--gris-200); border-radius:9px; font-size:13px; background:var(--gris-100);}
+
+.toast{
+  position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--azul-oscuro); color:var(--blanco); padding:13px 22px; border-radius:12px;
+  font-size:13.5px; font-weight:600; box-shadow:0 10px 25px rgba(0,0,0,.25);
+  opacity:0; pointer-events:none; transition:.25s; z-index:500; display:flex; align-items:center; gap:8px;
+  max-width:90vw;
+}
+.toast.mostrar{opacity:1; transform:translateX(-50%) translateY(0);}
+.toast i{color:var(--verde-neon);}
+.toast.error i{color:var(--rojo);}
+
+.footer-nota{text-align:center; font-size:11.5px; color:var(--gris-400); padding:14px;}
+
+@media (max-width:520px){
+  .ticket-generado .num{font-size:46px;}
+  .turno-actual-box .num-grande{font-size:52px;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ TOPBAR ============ -->
+<header class="topbar">
+  
+  <img class="avatar-perfil" id="avatar-perfil" src="" alt="Foto de perfil" title="Clic para cambiar la foto">
+  <input type="file" id="avatar-perfil-input" class="avatar-perfil-input" accept="image/*">
+  <div>
+    <h1>Secretaría de Tránsito de Valledupar
+      <span>Turnos Digitales · Área de Trámites</span>
+    </h1>
+  </div>
+  <div class="reloj" id="reloj">
+    <b id="reloj-hora">--:--</b>
+    <span id="reloj-fecha">--</span>
+  </div>
+</header>
+
+<!-- ============ VISTA 1: REGISTRO PÚBLICO ============ -->
+<section class="vista activa" id="vista-registro">
+  <div class="contenedor">
+    <div class="tarjeta">
+      <div class="titulo-seccion">
+        <i class="fa-solid fa-ticket"></i>
+        <div><h2>Tomar Turno</h2><small>Complete sus datos para generar su ticket de atención</small></div>
+      </div>
+
+      <form id="form-registro" novalidate>
+        <div class="grid-form">
+          <div class="campo">
+            <label><i class="fa-solid fa-user"></i>Nombre completo</label>
+            <input type="text" id="f-nombre" placeholder="Ej: Juan Pérez Rodríguez" autocomplete="off" required>
+            <span class="error-msg" id="err-nombre"></span>
+          </div>
+          <div class="campo">
+            <label><i class="fa-solid fa-id-card"></i>Cédula</label>
+            <input type="text" id="f-cedula" placeholder="Solo números" inputmode="numeric" autocomplete="off" required>
+            <span class="error-msg" id="err-cedula"></span>
+          </div>
+          <div class="campo">
+            <label><i class="fa-solid fa-phone"></i>Celular</label>
+            <input type="text" id="f-celular" placeholder="10 dígitos" inputmode="numeric" autocomplete="off" required>
+            <span class="error-msg" id="err-celular"></span>
+          </div>
+          <div class="campo">
+            <label><i class="fa-solid fa-envelope"></i>Correo electrónico</label>
+            <input type="email" id="f-correo" placeholder="correo@ejemplo.com" autocomplete="off" required>
+            <span class="error-msg" id="err-correo"></span>
+          </div>
+          <div class="campo">
+            <label><i class="fa-solid fa-cake-candles"></i>Fecha de nacimiento</label>
+            <input type="date" id="f-fecnac" required>
+            <span class="error-msg" id="err-fecnac"></span>
+          </div>
+          <div class="campo">
+            <label><i class="fa-solid fa-hourglass-half"></i>Edad</label>
+            <span class="badge-edad" id="badge-edad"><i class="fa-solid fa-circle-info"></i> Se calcula automáticamente</span>
+          </div>
+          <div class="campo">
+            <label><i class="fa-solid fa-venus-mars"></i>Género</label>
+            <select id="f-genero" required>
+              <option value="">Seleccione...</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Otro">Otro</option>
+            </select>
+            <span class="error-msg" id="err-genero"></span>
+          </div>
+          <div class="campo">
+            <label><i class="fa-solid fa-file-lines"></i>Tipo de trámite</label>
+            <select id="f-tramite" required>
+              <option value="">Seleccione...</option>
+              <option value="Licencia de Conducción">Licencia de Conducción</option>
+              <option value="Traspaso">Traspaso</option>
+              <option value="Matrícula">Matrícula</option>
+              <option value="Comparendos">Comparendos</option>
+              <option value="Certificados">Certificados</option>
+              <option value="Otro">Otro</option>
+            </select>
+            <span class="error-msg" id="err-tramite"></span>
+          </div>
+          <div class="campo">
+            <label><i class="fa-solid fa-bullhorn"></i>Tipo de atención</label>
+            <select id="f-atencion" required>
+              <option value="Normal">Normal</option>
+              <option value="PQRF">PQRF - Peticiones, Quejas, Reclamos, Felicitaciones</option>
+            </select>
+            <span class="error-msg" id="err-atencion"></span>
+          </div>
+        </div>
+
+        <div class="acciones-form">
+          <button type="submit" class="btn btn-primario"><i class="fa-solid fa-ticket"></i> Tomar Turno</button>
+        </div>
+      </form>
+
+      <div class="ticket-generado" id="ticket-generado">
+        <p>SU TURNO HA SIDO GENERADO</p>
+        <div class="num" id="ticket-num">A001</div>
+        <p id="ticket-nombre">—</p>
+        <div class="info-extra" id="ticket-extra">—</div>
+        <div style="margin-top:18px;">
+          <button class="btn btn-outline" style="color:#fff;border-color:var(--verde-neon);" id="btn-nuevo-turno"><i class="fa-solid fa-rotate-left"></i> Registrar otro turno</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VISTA 2: VISOR / PANTALLA PRINCIPAL ============ -->
+<section class="vista" id="vista-visor">
+  <div class="visor-wrap">
+    <div class="visor-header">
+      <h2><i class="fa-solid fa-tv"></i> PANTALLA DE TURNOS </h2>
+      <p> · Actualización en tiempo real</p>
+    </div>
+    <div class="visor-grid">
+      <div class="panel-visor">
+        <h3><i class="fa-solid fa-volume-high"></i> Turno actual</h3>
+        <div id="visor-actual"><div class="turno-actual-vacio">Aún no se han llamado turnos</div></div>
+      </div>
+      <div class="panel-visor">
+        <h3><i class="fa-solid fa-list-ol"></i> Siguientes</h3>
+        <ul class="lista-turnos" id="visor-siguientes"><li class="vacio-lista" style="display:block;width:100%;">Sin turnos en espera</li></ul>
+      </div>
+      <div class="panel-visor">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Últimos llamados</h3>
+        <ul class="lista-turnos" id="visor-ultimos"><li class="vacio-lista" style="display:block;width:100%;">Sin historial aún</li></ul>
+      </div>
+      <div class="panel-visor videos-box">
+        <h3><i class="fa-solid fa-photo-film"></i> Videos institucionales</h3>
+        <div class="video-player-wrap" id="video-player-wrap">
+          <iframe width="250" height="150" src="https://youtu.be/rdA2EZk3ULs?si=Qf8MXydJDVS3yk3o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+          <div class="video-player-vacio">
+            <i class="fa-solid fa-clapperboard"></i>
+            Sin videos configurados.<br>Agréguelos desde Admin → Configuración.
+          </div>
+        </div>
+        <div class="video-contador" id="video-contador"></div>
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VISTA 3: CAJAS ============ -->
+<section class="vista" id="vista-cajas">
+  <div class="contenedor">
+    <div class="tarjeta" id="selector-cajas-wrap">
+      <div class="titulo-seccion">
+        <i class="fa-solid fa-headset"></i>
+        <div><h2>Módulo de Cajas</h2><small>Seleccione su caja para iniciar sesión</small></div>
+      </div>
+      <div class="selector-cajas" id="selector-cajas"></div>
+    </div>
+
+    <div class="panel-caja-activa" id="panel-caja-activa">
+      <div class="caja-info-header">
+        <h3 id="caja-activa-nombre"><i class="fa-solid fa-desktop"></i> Caja 1</h3>
+        <button class="salir-caja" id="btn-salir-caja"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</button>
+      </div>
+      <div class="tarjeta">
+        <div class="turno-caja-display" id="turno-caja-display">
+          <p style="color:var(--gris-700);">No hay turno en atención</p>
+        </div>
+        <div class="acciones-caja">
+          <button class="btn btn-primario btn-bloque" id="btn-llamar-siguiente"><i class="fa-solid fa-bullhorn"></i> Llamar Siguiente</button>
+          <button class="btn btn-outline" id="btn-repetir-llamado"><i class="fa-solid fa-volume-high"></i> Repetir Llamado</button>
+          <button class="btn btn-oscuro" id="btn-finalizar-atencion"><i class="fa-solid fa-check"></i> Finalizar Atención</button>
+          <button class="btn btn-amarillo btn-bloque" id="btn-repetir-silencio"><i class="fa-solid fa-volume-xmark"></i> Pedir Silencio en Sala</button>
+        </div>
+        <div class="stat-mini">
+          <div><b id="caja-atendidos-hoy">0</b>Atendidos hoy</div>
+          <div><b id="caja-en-espera-tipo">0</b>En espera (su fila)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Modal login caja -->
+<div class="login-caja-modal" id="modal-login-caja">
+  <div class="modal-box">
+    <button class="cerrar-modal" id="cerrar-modal-caja"><i class="fa-solid fa-xmark"></i></button>
+    <h3><i class="fa-solid fa-lock"></i> <span id="modal-caja-titulo">Caja 1</span></h3>
+    <div class="campo">
+      <label>Contraseña</label>
+      <input type="password" id="modal-caja-pass" placeholder="••••••">
+      <span class="error-msg" id="modal-caja-error"></span>
+    </div>
+    <button class="btn btn-primario btn-bloque" id="btn-ingresar-caja" style="margin-top:10px;"><i class="fa-solid fa-right-to-bracket"></i> Ingresar</button>
+  </div>
+</div>
+
+<!-- ============ VISTA 4: ADMINISTRADOR ============ -->
+<section class="vista" id="vista-admin">
+  <div class="contenedor">
+
+    <div class="login-admin-wrap admin-oculto mostrar" id="admin-login-wrap">
+      <div class="tarjeta">
+        <div class="titulo-seccion">
+          <i class="fa-solid fa-user-shield"></i>
+          <div><h2>Acceso Administrador</h2><small>Ingrese la contraseña para continuar</small></div>
+        </div>
+        <div class="campo">
+          <label>Contraseña</label>
+          <input type="password" id="admin-pass" placeholder="••••••••">
+          <span class="error-msg" id="admin-pass-error"></span>
+        </div>
+        <button class="btn btn-primario btn-bloque" id="btn-admin-login" style="margin-top:10px;"><i class="fa-solid fa-right-to-bracket"></i> Ingresar</button>
+      </div>
+    </div>
+
+    <div class="admin-oculto" id="admin-dashboard">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+        <div class="titulo-seccion" style="margin-bottom:0;">
+          <i class="fa-solid fa-chart-line"></i>
+          <div><h2>Panel Administrativo</h2><small>Estadísticas y gestión general del sistema</small></div>
+        </div>
+        <button class="btn btn-outline" id="btn-admin-logout"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+      </div>
+
+      <div class="tabs-admin">
+        <button class="tab-btn activo" data-tab="tab-stats"><i class="fa-solid fa-chart-simple"></i> Estadísticas</button>
+        <button class="tab-btn" data-tab="tab-bd"><i class="fa-solid fa-database"></i> Base de Datos</button>
+        <button class="tab-btn" data-tab="tab-config"><i class="fa-solid fa-gear"></i> Configuración</button>
+      </div>
+
+      <!-- TAB ESTADÍSTICAS -->
+      <div class="panel-tab activo" id="tab-stats">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="charts-grid">
+          <div class="chart-box"><h4>Turnos atendidos por caja (hoy)</h4><canvas id="chart-cajas"></canvas></div>
+          <div class="chart-box"><h4>Normal vs PQRF (hoy)</h4><canvas id="chart-tipo"></canvas></div>
+        </div>
+      </div>
+
+      <!-- TAB BASE DE DATOS -->
+      <div class="panel-tab" id="tab-bd">
+        <div class="botones-admin">
+          <button class="btn btn-oscuro" id="btn-export-json"><i class="fa-solid fa-file-code"></i> Descargar JSON</button>
+          <button class="btn btn-oscuro" id="btn-export-xlsx"><i class="fa-solid fa-file-excel"></i> Descargar Excel</button>
+          <label class="btn btn-outline" style="position:relative;">
+            <i class="fa-solid fa-upload"></i> Importar JSON
+            <input type="file" id="input-import-json" accept="application/json" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+          </label>
+          <button class="btn btn-peligro" id="btn-reset-sistema"><i class="fa-solid fa-trash"></i> Reset Sistema</button>
+        </div>
+        <div class="filtros-tabla">
+          <input type="text" id="filtro-busqueda" placeholder="Buscar por nombre, cédula o ticket...">
+          <input type="date" id="filtro-fecha">
+          <select id="filtro-estado">
+            <option value="">Todos los estados</option>
+            <option value="En Espera">En Espera</option>
+            <option value="Llamado">Llamado</option>
+            <option value="Atendido">Atendido</option>
+          </select>
+          <select id="filtro-tipo">
+            <option value="">Todos los tipos</option>
+            <option value="Normal">Normal</option>
+            <option value="PQRF">PQRF</option>
+          </select>
+        </div>
+        <div class="tabla-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th><th>Ticket</th><th>Nombre</th><th>Cédula</th><th>Celular</th><th>Correo</th>
+                <th>Edad</th><th>Género</th><th>Trámite</th><th>Atención</th><th>Caja</th>
+                <th>Estado</th><th>Hora Registro</th><th>Hora Llamado</th><th>Hora Fin</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-bd-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB CONFIGURACIÓN -->
+      <div class="panel-tab" id="tab-config">
+        <div class="tarjeta">
+          <h3 style="margin-bottom:14px;color:var(--azul-oscuro);"><i class="fa-solid fa-key"></i> Contraseñas de cajas</h3>
+          <div class="config-cajas-grid" id="config-cajas-grid"></div>
+          <button class="btn btn-primario" id="btn-guardar-passwords" style="margin-top:16px;"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button>
+        </div>
+
+        <div class="tarjeta">
+          <h3 style="margin-bottom:6px;color:var(--azul-oscuro);"><i class="fa-solid fa-photo-film"></i> Videos institucionales del visor</h3>
+          <small style="color:var(--gris-400);">Pegue la URL de cada video (.mp4). Se reproducirán uno tras otro en bucle en la pantalla del Visor.</small>
+          <div class="fila-agregar-video">
+            <input type="text" id="input-nueva-url-video" placeholder="https://ejemplo.com/video.mp4">
+            <button class="btn btn-primario" id="btn-agregar-video"><i class="fa-solid fa-plus"></i> Agregar</button>
+          </div>
+          <div class="videos-admin-lista" id="videos-admin-lista" autoplay muted ></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ BOTTOM NAVIGATION ============ -->
+<nav class="bottom-nav">
+  <button class="nav-item activo" data-vista="vista-registro"><i class="fa-solid fa-ticket"></i>Turno</button>
+  <button class="nav-item" data-vista="vista-visor"><i class="fa-solid fa-tv"></i>Visor</button>
+  <button class="nav-item" data-vista="vista-cajas"><i class="fa-solid fa-headset"></i>Cajas</button>
+  <button class="nav-item" data-vista="vista-admin"><i class="fa-solid fa-user-shield"></i>Admin</button>
+</nav>
+
+<div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="toast-msg">Mensaje</span></div>
+
+<script>
+/* =====================================================================
+   TURNOS DIGITALES - SECRETARÍA DE TRÁNSITO DE VALLEDUPAR
+   Código Vanilla JS - Persistencia con LocalStorage
+   ===================================================================== */
+
+/* ---------- CONFIGURACIÓN GENERAL ---------- */
+const CLAVE_DB = 'stv_turnos_db';
+const CLAVE_CONFIG = 'stv_turnos_config';
+const CLAVE_PASS_ADMIN = 'Sem*2026!!';
+const CAJAS = ['Caja 1','Caja 2','Caja 3','Caja 4','Caja PQRF'];
+
+/* Estado en memoria de la caja actualmente logueada en este dispositivo */
+let cajaActivaSesion = null;
+
+/* ---------- UTILIDADES DE PERSISTENCIA ---------- */
+function obtenerDB(){
+  const raw = localStorage.getItem(CLAVE_DB);
+  return raw ? JSON.parse(raw) : [];
+}
+function guardarDB(db){
+  localStorage.setItem(CLAVE_DB, JSON.stringify(db));
+}
+function obtenerConfig(){
+  const raw = localStorage.getItem(CLAVE_CONFIG);
+  if(raw){
+    const cfg = JSON.parse(raw);
+    // Compatibilidad con configuraciones guardadas antes de agregar videos/foto de perfil
+    if(!Array.isArray(cfg.videos)) cfg.videos = [];
+    if(cfg.fotoPerfil === undefined) cfg.fotoPerfil = null;
+    return cfg;
+  }
+  // Configuración inicial por defecto
+  const cfgInicial = {
+    passwords:{ 'Caja 1':'1234','Caja 2':'1234','Caja 3':'1234','Caja 4':'1234','Caja PQRF':'1234' },
+    contadores:{ fecha: hoyISO(), normal:0, pqrf:0 },
+    videos: [],
+    fotoPerfil: null
+  };
+  guardarConfig(cfgInicial);
+  return cfgInicial;
+}
+function guardarConfig(cfg){
+  localStorage.setItem(CLAVE_CONFIG, JSON.stringify(cfg));
+}
+function hoyISO(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+/* ---------- GENERACIÓN DE TICKET ---------- */
+function generarTicket(tipoAtencion){
+  const cfg = obtenerConfig();
+  // Si cambió el día, reiniciar contadores
+  if(cfg.contadores.fecha !== hoyISO()){
+    cfg.contadores = { fecha: hoyISO(), normal:0, pqrf:0 };
+  }
+  let prefijo, num;
+  if(tipoAtencion === 'PQRF'){
+    cfg.contadores.pqrf += 1;
+    prefijo = 'P';
+    num = cfg.contadores.pqrf;
+  } else {
+    cfg.contadores.normal += 1;
+    prefijo = 'A';
+    num = cfg.contadores.normal;
+  }
+  guardarConfig(cfg);
+  return prefijo + String(num).padStart(3,'0');
+}
+
+/* ---------- TOAST DE NOTIFICACIÓN ---------- */
+let toastTimeout;
+function mostrarToast(mensaje, esError=false){
+  const toast = document.getElementById('toast');
+  const icono = toast.querySelector('i');
+  document.getElementById('toast-msg').textContent = mensaje;
+  toast.classList.toggle('error', esError);
+  icono.className = esError ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check';
+  toast.classList.add('mostrar');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(()=> toast.classList.remove('mostrar'), 3200);
+}
+
+/* ---------- RELOJ EN TOPBAR ---------- */
+function actualizarReloj(){
+  const d = new Date();
+  document.getElementById('reloj-hora').textContent = d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('reloj-fecha').textContent = d.toLocaleDateString('es-CO',{weekday:'short',day:'2-digit',month:'short'});
+}
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
+
+/* =====================================================================
+   NAVEGACIÓN (BOTTOM NAV)
+   ===================================================================== */
+document.querySelectorAll('.nav-item').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('activo'));
+    document.querySelectorAll('.vista').forEach(v=>v.classList.remove('activa'));
+    btn.classList.add('activo');
+    const destino = btn.dataset.vista;
+    document.getElementById(destino).classList.add('activa');
+    // Refrescar contenido según la vista activada
+    if(destino === 'vista-visor'){ renderVisor(); if(!document.getElementById('video-visor-actual')) renderReproductorVideos(); }
+    if(destino === 'vista-cajas') renderSelectorCajas();
+    if(destino === 'vista-admin') { /* se mantiene estado de sesión admin en memoria */ }
+  });
+});
+
+/* =====================================================================
+   SECCIÓN 1: REGISTRO DE TURNO PÚBLICO
+   ===================================================================== */
+const formRegistro = document.getElementById('form-registro');
+const fFechaNac = document.getElementById('f-fecnac');
+const badgeEdad = document.getElementById('badge-edad');
+let edadCalculada = null;
+
+// Limitar fecha de nacimiento a hoy máximo
+fFechaNac.max = hoyISO();
+
+fFechaNac.addEventListener('change', ()=>{
+  if(!fFechaNac.value){ badgeEdad.innerHTML = '<i class="fa-solid fa-circle-info"></i> Se calcula automáticamente'; edadCalculada=null; return; }
+  const nacimiento = new Date(fFechaNac.value+'T00:00:00');
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - nacimiento.getFullYear();
+  const m = hoy.getMonth() - nacimiento.getMonth();
+  if(m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) edad--;
+  if(edad < 0 || edad > 120 || nacimiento > hoy){
+    document.getElementById('err-fecnac').textContent = 'Fecha de nacimiento inválida';
+    fFechaNac.classList.add('invalido');
+    edadCalculada = null;
+    badgeEdad.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Fecha inválida';
+    return;
+  }
+  document.getElementById('err-fecnac').textContent = '';
+  fFechaNac.classList.remove('invalido');
+  edadCalculada = edad;
+  badgeEdad.innerHTML = `<i class="fa-solid fa-user-check"></i> ${edad} años`;
+});
+
+// Validaciones en vivo
+document.getElementById('f-cedula').addEventListener('input', function(){
+  this.value = this.value.replace(/[^0-9]/g,'');
+  validarCampoTexto(this, this.value.length >= 6, 'err-cedula', 'La cédula debe contener solo números (mín. 6 dígitos)');
+});
+document.getElementById('f-celular').addEventListener('input', function(){
+  this.value = this.value.replace(/[^0-9]/g,'').slice(0,10);
+  validarCampoTexto(this, this.value.length === 10, 'err-celular', 'El celular debe tener exactamente 10 dígitos');
+});
+document.getElementById('f-correo').addEventListener('input', function(){
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  validarCampoTexto(this, re.test(this.value), 'err-correo', 'Formato de correo no válido');
+});
+document.getElementById('f-nombre').addEventListener('input', function(){
+  validarCampoTexto(this, this.value.trim().length >= 3, 'err-nombre', 'Ingrese el nombre completo');
+});
+
+function validarCampoTexto(input, esValido, idError, mensaje){
+  const err = document.getElementById(idError);
+  if(input.value === ''){ input.classList.remove('invalido','valido'); err.textContent=''; return; }
+  if(esValido){ input.classList.add('valido'); input.classList.remove('invalido'); err.textContent=''; }
+  else{ input.classList.add('invalido'); input.classList.remove('valido'); err.textContent = mensaje; }
+}
+
+formRegistro.addEventListener('submit', function(e){
+  e.preventDefault();
+
+  const nombre = document.getElementById('f-nombre').value.trim();
+  const cedula = document.getElementById('f-cedula').value.trim();
+  const celular = document.getElementById('f-celular').value.trim();
+  const correo = document.getElementById('f-correo').value.trim();
+  const fecnac = fFechaNac.value;
+  const genero = document.getElementById('f-genero').value;
+  const tramite = document.getElementById('f-tramite').value;
+  const atencion = document.getElementById('f-atencion').value;
+
+  let valido = true;
+  if(nombre.length < 3){ validarCampoTexto(document.getElementById('f-nombre'), false, 'err-nombre','Ingrese el nombre completo'); valido=false; }
+  if(!/^[0-9]{6,}$/.test(cedula)){ validarCampoTexto(document.getElementById('f-cedula'), false, 'err-cedula','La cédula debe contener solo números (mín. 6 dígitos)'); valido=false; }
+  if(!/^[0-9]{10}$/.test(celular)){ validarCampoTexto(document.getElementById('f-celular'), false, 'err-celular','El celular debe tener exactamente 10 dígitos'); valido=false; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)){ validarCampoTexto(document.getElementById('f-correo'), false, 'err-correo','Formato de correo no válido'); valido=false; }
+  if(!fecnac || edadCalculada === null){ document.getElementById('err-fecnac').textContent='Seleccione una fecha de nacimiento válida'; valido=false; }
+  if(!genero){ document.getElementById('err-genero').textContent='Seleccione un género'; valido=false; } else { document.getElementById('err-genero').textContent=''; }
+  if(!tramite){ document.getElementById('err-tramite').textContent='Seleccione un trámite'; valido=false; } else { document.getElementById('err-tramite').textContent=''; }
+
+  if(!valido){ mostrarToast('Por favor corrija los campos marcados', true); return; }
+
+  const ticket = generarTicket(atencion);
+  const ahora = new Date();
+
+  const registro = {
+    id: 'reg_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+    ticket,
+    nombre, cedula, celular, correo,
+    fechaNacimiento: fecnac,
+    edad: edadCalculada,
+    genero, tramite,
+    tipoAtencion: atencion,
+    estado: 'En Espera',
+    caja: null,
+    fecha: hoyISO(),
+    horaRegistro: ahora.toISOString(),
+    horaLlamado: null,
+    horaFin: null
+  };
+
+  const db = obtenerDB();
+  db.push(registro);
+  guardarDB(db);
+
+  // Mostrar ticket generado
+  document.getElementById('ticket-num').textContent = ticket;
+  document.getElementById('ticket-nombre').textContent = nombre;
+  document.getElementById('ticket-extra').textContent = `${tramite} · ${atencion === 'PQRF' ? 'PQRF' : 'Atención Normal'}`;
+  document.getElementById('ticket-generado').classList.add('mostrar');
+  formRegistro.style.display = 'none';
+
+  mostrarToast('Turno '+ticket+' generado con éxito');
+});
+
+document.getElementById('btn-nuevo-turno').addEventListener('click', ()=>{
+  formRegistro.reset();
+  formRegistro.style.display = '';
+  document.getElementById('ticket-generado').classList.remove('mostrar');
+  badgeEdad.innerHTML = '<i class="fa-solid fa-circle-info"></i> Se calcula automáticamente';
+  edadCalculada = null;
+  document.querySelectorAll('#form-registro input').forEach(i=>i.classList.remove('valido','invalido'));
+});
+
+/* =====================================================================
+   SECCIÓN 2: VISOR / PANTALLA PRINCIPAL + VOZ
+   ===================================================================== */
+function hablar(texto){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(texto);
+    utt.lang = 'es-CO';
+    utt.rate = 0.95;
+    utt.pitch = 1;
+    window.speechSynthesis.speak(utt);
+  }catch(e){ console.warn('Voz no disponible', e); }
+}
+
+function textoLlamado(reg){
+  return `Turno ${separarLetras(reg.ticket)}, ${reg.nombre}, diríjase a ${reg.caja}`;
+}
+// Ayuda a que la voz pronuncie el ticket letra por letra + número, ej: "A cero cero uno"
+function separarLetras(ticket){
+  return ticket.split('').join(' ');
+}
+
+function renderVisor(){
+  const db = obtenerDB().filter(r=>r.fecha === hoyISO());
+
+  // Turno actual = último llamado (estado Llamado), el más reciente por horaLlamado
+  const llamados = db.filter(r=>r.estado==='Llamado').sort((a,b)=> new Date(b.horaLlamado) - new Date(a.horaLlamado));
+  const actual = llamados[0];
+  const contActual = document.getElementById('visor-actual');
+  if(actual){
+    contActual.innerHTML = `
+      <div class="turno-actual-box">
+        <div class="num-grande">${actual.ticket}</div>
+        <div class="nombre-grande">${escapeHTML(actual.nombre)}</div>
+        <div class="detalle-grande">${escapeHTML(actual.tramite)}</div>
+        <div class="caja-grande"><i class="fa-solid fa-desktop"></i> ${actual.caja}</div>
+      </div>`;
+  } else {
+    contActual.innerHTML = '<div class="turno-actual-vacio">Aún no se han llamado turnos</div>';
+  }
+
+  // Siguientes 5 en espera (orden de llegada)
+  const enEspera = db.filter(r=>r.estado==='En Espera').sort((a,b)=> new Date(a.horaRegistro)-new Date(b.horaRegistro)).slice(0,5);
+  const ulSig = document.getElementById('visor-siguientes');
+  ulSig.innerHTML = enEspera.length ? enEspera.map(r=>`
+      <li><span class="tk">${r.ticket}</span><span class="cj">${escapeHTML(r.tramite)} · ${r.tipoAtencion}</span></li>
+    `).join('') : '<li class="vacio-lista" style="display:block;width:100%;">Sin turnos en espera</li>';
+
+  // Últimos 4 llamados (excluyendo el actual), llamados o atendidos
+  const historial = db.filter(r=> (r.estado==='Llamado' || r.estado==='Atendido') && r !== actual)
+    .sort((a,b)=> new Date(b.horaLlamado)-new Date(a.horaLlamado)).slice(0,4);
+  const ulUlt = document.getElementById('visor-ultimos');
+  ulUlt.innerHTML = historial.length ? historial.map(r=>`
+      <li><span class="tk">${r.ticket}</span><span class="cj">${r.caja || '—'}</span></li>
+    `).join('') : '<li class="vacio-lista" style="display:block;width:100%;">Sin historial aún</li>';
+}
+
+/* Escuchar cambios en localStorage de otras pestañas (multi-pantalla) para refrescar visor en vivo */
+window.addEventListener('storage', (e)=>{
+  if(e.key === CLAVE_DB){
+    const visorActivo = document.getElementById('vista-visor').classList.contains('activa');
+    if(visorActivo) renderVisor();
+  }
+});
+// Refresco periódico por si el visor está abierto en otra pestaña sin evento storage local
+setInterval(()=>{
+  if(document.getElementById('vista-visor').classList.contains('activa')) renderVisor();
+}, 4000);
+
+function escapeHTML(str){
+  const d = document.createElement('div');
+  d.textContent = str ?? '';
+  return d.innerHTML;
+}
+
+/* =====================================================================
+   SECCIÓN 3: MÓDULO DE CAJAS
+   ===================================================================== */
+function renderSelectorCajas(){
+  const cont = document.getElementById('selector-cajas');
+  cont.innerHTML = CAJAS.map(c=>`
+    <div class="caja-card" data-caja="${c}">
+      <i class="fa-solid ${c==='Caja PQRF' ? 'fa-comments' : 'fa-desktop'}"></i>
+      <h3>${c}</h3>
+      <small>${c==='Caja PQRF' ? 'Solo PQRF' : 'Trámites de movilidad'}</small>
+    </div>
+  `).join('');
+  cont.querySelectorAll('.caja-card').forEach(card=>{
+    card.addEventListener('click', ()=> abrirModalLoginCaja(card.dataset.caja));
+  });
+}
+
+function abrirModalLoginCaja(caja){
+  document.getElementById('modal-caja-titulo').textContent = caja;
+  document.getElementById('modal-caja-pass').value = '';
+  document.getElementById('modal-caja-error').textContent = '';
+  document.getElementById('modal-login-caja').classList.add('mostrar');
+  document.getElementById('modal-login-caja').dataset.cajaObjetivo = caja;
+  setTimeout(()=> document.getElementById('modal-caja-pass').focus(), 100);
+}
+document.getElementById('cerrar-modal-caja').addEventListener('click', ()=>{
+  document.getElementById('modal-login-caja').classList.remove('mostrar');
+});
+document.getElementById('btn-ingresar-caja').addEventListener('click', intentarLoginCaja);
+document.getElementById('modal-caja-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') intentarLoginCaja(); });
+
+function intentarLoginCaja(){
+  const caja = document.getElementById('modal-login-caja').dataset.cajaObjetivo;
+  const pass = document.getElementById('modal-caja-pass').value;
+  const cfg = obtenerConfig();
+  if(cfg.passwords[caja] === pass){
+    cajaActivaSesion = caja;
+    document.getElementById('modal-login-caja').classList.remove('mostrar');
+    document.getElementById('selector-cajas-wrap').style.display = 'none';
+    document.getElementById('panel-caja-activa').classList.add('mostrar');
+    document.getElementById('caja-activa-nombre').innerHTML = `<i class="fa-solid fa-desktop"></i> ${caja}`;
+    renderPanelCaja();
+    mostrarToast('Sesión iniciada en '+caja);
+  } else {
+    document.getElementById('modal-caja-error').textContent = 'Contraseña incorrecta';
+  }
+}
+
+document.getElementById('btn-salir-caja').addEventListener('click', ()=>{
+  cajaActivaSesion = null;
+  document.getElementById('panel-caja-activa').classList.remove('mostrar');
+  document.getElementById('selector-cajas-wrap').style.display = '';
+});
+
+let turnoEnAtencionPorCaja = {}; // referencia en memoria: caja -> id de registro actualmente mostrado
+
+function renderPanelCaja(){
+  if(!cajaActivaSesion) return;
+  const db = obtenerDB();
+  // Buscar si hay un turno 'Llamado' asignado a esta caja (el más reciente)
+  const llamadoActivo = db.filter(r=>r.caja===cajaActivaSesion && r.estado==='Llamado')
+    .sort((a,b)=> new Date(b.horaLlamado)-new Date(a.horaLlamado))[0];
+
+  const display = document.getElementById('turno-caja-display');
+  if(llamadoActivo){
+    turnoEnAtencionPorCaja[cajaActivaSesion] = llamadoActivo.id;
+    const tiempoEspera = calcularTiempoTranscurrido(llamadoActivo.horaLlamado);
+    display.innerHTML = `
+      <div class="num">${llamadoActivo.ticket}</div>
+      <div class="nombre">${escapeHTML(llamadoActivo.nombre)}</div>
+      <div class="meta">${escapeHTML(llamadoActivo.tramite)} · CC ${llamadoActivo.cedula}</div>
+      <div class="espera"><i class="fa-solid fa-clock"></i> En atención hace ${tiempoEspera}</div>
+    `;
+  } else {
+    turnoEnAtencionPorCaja[cajaActivaSesion] = null;
+    display.innerHTML = '<p style="color:var(--gris-700);">No hay turno en atención. Presione "Llamar Siguiente".</p>';
+  }
+
+  // Estadísticas rápidas
+  const hoy = hoyISO();
+  const atendidosHoy = db.filter(r=>r.caja===cajaActivaSesion && r.estado==='Atendido' && r.fecha===hoy).length;
+  document.getElementById('caja-atendidos-hoy').textContent = atendidosHoy;
+
+  const esPQRF = cajaActivaSesion === 'Caja PQRF';
+  const enEsperaTipo = db.filter(r=> r.fecha===hoy && r.estado==='En Espera' && (esPQRF ? r.tipoAtencion==='PQRF' : r.tipoAtencion==='Normal')).length;
+  document.getElementById('caja-en-espera-tipo').textContent = enEsperaTipo;
+
+  document.getElementById('btn-repetir-llamado').disabled = !llamadoActivo;
+  document.getElementById('btn-finalizar-atencion').disabled = !llamadoActivo;
+}
+
+function calcularTiempoTranscurrido(isoInicio){
+  const ms = Date.now() - new Date(isoInicio).getTime();
+  const min = Math.floor(ms/60000);
+  if(min < 1) return 'un momento';
+  if(min === 1) return '1 minuto';
+  return min+' minutos';
+}
+
+document.getElementById('btn-llamar-siguiente').addEventListener('click', ()=>{
+  if(!cajaActivaSesion) return;
+  const db = obtenerDB();
+  const esPQRF = cajaActivaSesion === 'Caja PQRF';
+  const candidatos = db.filter(r=> r.fecha===hoyISO() && r.estado==='En Espera' && (esPQRF ? r.tipoAtencion==='PQRF' : r.tipoAtencion==='Normal'))
+    .sort((a,b)=> new Date(a.horaRegistro)-new Date(b.horaRegistro));
+  if(candidatos.length === 0){
+    mostrarToast('No hay turnos en espera para esta caja', true);
+    return;
+  }
+  const siguiente = candidatos[0];
+  siguiente.estado = 'Llamado';
+  siguiente.caja = cajaActivaSesion;
+  siguiente.horaLlamado = new Date().toISOString();
+  guardarDB(db);
+  hablar(textoLlamado(siguiente));
+  renderPanelCaja();
+  mostrarToast('Llamando turno '+siguiente.ticket);
+});
+
+document.getElementById('btn-repetir-llamado').addEventListener('click', ()=>{
+  if(!cajaActivaSesion) return;
+  const db = obtenerDB();
+  const activo = db.find(r=> r.id === turnoEnAtencionPorCaja[cajaActivaSesion]);
+  if(activo) hablar(textoLlamado(activo));
+});
+
+document.getElementById('btn-finalizar-atencion').addEventListener('click', ()=>{
+  if(!cajaActivaSesion) return;
+  const db = obtenerDB();
+  const activo = db.find(r=> r.id === turnoEnAtencionPorCaja[cajaActivaSesion]);
+  if(!activo){ mostrarToast('No hay turno activo para finalizar', true); return; }
+  activo.estado = 'Atendido';
+  activo.horaFin = new Date().toISOString();
+  guardarDB(db);
+  renderPanelCaja();
+  mostrarToast('Atención finalizada: '+activo.ticket);
+});
+
+/* Refrescar panel de caja periódicamente mientras esté activo (por si otra pestaña actualiza) */
+setInterval(()=>{
+  if(cajaActivaSesion && document.getElementById('vista-cajas').classList.contains('activa')) renderPanelCaja();
+}, 5000);
+
+/* =====================================================================
+   SECCIÓN 4: ADMINISTRADOR
+   ===================================================================== */
+let adminLogueado = false;
+let chartCajasInstancia = null;
+let chartTipoInstancia = null;
+
+document.getElementById('btn-admin-login').addEventListener('click', intentarLoginAdmin);
+document.getElementById('admin-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') intentarLoginAdmin(); });
+
+function intentarLoginAdmin(){
+  const pass = document.getElementById('admin-pass').value;
+  if(pass === CLAVE_PASS_ADMIN){
+    adminLogueado = true;
+    document.getElementById('admin-login-wrap').classList.remove('mostrar');
+    document.getElementById('admin-dashboard').classList.add('mostrar');
+    document.getElementById('admin-pass').value = '';
+    renderAdminDashboard();
+  } else {
+    document.getElementById('admin-pass-error').textContent = 'Contraseña incorrecta';
+  }
+}
+document.getElementById('btn-admin-logout').addEventListener('click', ()=>{
+  adminLogueado = false;
+  document.getElementById('admin-dashboard').classList.remove('mostrar');
+  document.getElementById('admin-login-wrap').classList.add('mostrar');
+});
+
+/* Tabs internos del admin */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('activo'));
+    document.querySelectorAll('.panel-tab').forEach(p=>p.classList.remove('activo'));
+    btn.classList.add('activo');
+    document.getElementById(btn.dataset.tab).classList.add('activo');
+    if(btn.dataset.tab === 'tab-bd') renderTablaBD();
+    if(btn.dataset.tab === 'tab-config'){ renderConfigCajas(); renderListaVideosAdmin(); }
+  });
+});
+
+function renderAdminDashboard(){
+  const db = obtenerDB();
+  const hoy = hoyISO();
+  const dbHoy = db.filter(r=>r.fecha===hoy);
+
+  const atendidosHoy = dbHoy.filter(r=>r.estado==='Atendido');
+  const enEsperaHoy = dbHoy.filter(r=>r.estado==='En Espera');
+  const pqrfHoy = dbHoy.filter(r=>r.tipoAtencion==='PQRF');
+  const normalHoy = dbHoy.filter(r=>r.tipoAtencion==='Normal');
+
+  // Tiempo promedio de atención (horaLlamado -> horaFin) en minutos
+  const tiempos = atendidosHoy.filter(r=>r.horaLlamado && r.horaFin).map(r=> (new Date(r.horaFin)-new Date(r.horaLlamado))/60000);
+  const promedio = tiempos.length ? (tiempos.reduce((a,b)=>a+b,0)/tiempos.length).toFixed(1) : '0';
+
+  const statsGrid = document.getElementById('stats-grid');
+  statsGrid.innerHTML = `
+    <div class="stat-card"><i class="fa-solid fa-check-double"></i><div class="val">${atendidosHoy.length}</div><div class="lbl">Atendidos hoy</div></div>
+    <div class="stat-card"><i class="fa-solid fa-hourglass-half"></i><div class="val">${enEsperaHoy.length}</div><div class="lbl">En espera</div></div>
+    <div class="stat-card"><i class="fa-solid fa-stopwatch"></i><div class="val">${promedio} min</div><div class="lbl">Tiempo promedio</div></div>
+    <div class="stat-card"><i class="fa-solid fa-comments"></i><div class="val">${pqrfHoy.length}</div><div class="lbl">Turnos PQRF</div></div>
+    <div class="stat-card"><i class="fa-solid fa-ticket"></i><div class="val">${normalHoy.length}</div><div class="lbl">Turnos normales</div></div>
+  `;
+
+  // Gráfica: atendidos por caja
+  const porCaja = {};
+  CAJAS.forEach(c=> porCaja[c] = 0);
+  atendidosHoy.forEach(r=>{ if(r.caja) porCaja[r.caja] = (porCaja[r.caja]||0)+1; });
+
+  const ctxCajas = document.getElementById('chart-cajas').getContext('2d');
+  if(chartCajasInstancia) chartCajasInstancia.destroy();
+  chartCajasInstancia = new Chart(ctxCajas, {
+    type:'bar',
+    data:{ labels:Object.keys(porCaja), datasets:[{ label:'Atendidos', data:Object.values(porCaja), backgroundColor:'#00e676', borderRadius:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{ stepSize:1 } } } }
+  });
+
+  const ctxTipo = document.getElementById('chart-tipo').getContext('2d');
+  if(chartTipoInstancia) chartTipoInstancia.destroy();
+  chartTipoInstancia = new Chart(ctxTipo, {
+    type:'doughnut',
+    data:{ labels:['Normal','PQRF'], datasets:[{ data:[normalHoy.length, pqrfHoy.length], backgroundColor:['#0a1f44','#39ff8f'] }] },
+    options:{ responsive:true, maintainAspectRatio:false }
+  });
+}
+
+/* --- Tabla de base de datos con filtros --- */
+function renderTablaBD(){
+  const db = obtenerDB().sort((a,b)=> new Date(b.horaRegistro)-new Date(a.horaRegistro));
+  const busqueda = document.getElementById('filtro-busqueda').value.toLowerCase().trim();
+  const fecha = document.getElementById('filtro-fecha').value;
+  const estado = document.getElementById('filtro-estado').value;
+  const tipo = document.getElementById('filtro-tipo').value;
+
+  const filtrados = db.filter(r=>{
+    if(busqueda && !(r.nombre.toLowerCase().includes(busqueda) || r.cedula.includes(busqueda) || r.ticket.toLowerCase().includes(busqueda))) return false;
+    if(fecha && r.fecha !== fecha) return false;
+    if(estado && r.estado !== estado) return false;
+    if(tipo && r.tipoAtencion !== tipo) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('tabla-bd-body');
+  if(filtrados.length === 0){
+    tbody.innerHTML = `<tr><td colspan="15" style="text-align:center;padding:20px;color:var(--gris-400);">No se encontraron registros</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtrados.map(r=>{
+    const pillClass = r.estado==='En Espera'?'pill-espera':(r.estado==='Llamado'?'pill-llamado':'pill-atendido');
+    return `<tr>
+      <td>${r.fecha}</td><td><b>${r.ticket}</b></td><td>${escapeHTML(r.nombre)}</td><td>${r.cedula}</td>
+      <td>${r.celular}</td><td>${r.correo}</td><td>${r.edad}</td><td>${r.genero}</td>
+      <td>${escapeHTML(r.tramite)}</td><td>${r.tipoAtencion}</td><td>${r.caja||'—'}</td>
+      <td><span class="pill ${pillClass}">${r.estado}</span></td>
+      <td>${formatHora(r.horaRegistro)}</td><td>${formatHora(r.horaLlamado)}</td><td>${formatHora(r.horaFin)}</td>
+    </tr>`;
+  }).join('');
+}
+function formatHora(iso){
+  if(!iso) return '—';
+  return new Date(iso).toLocaleString('es-CO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+['filtro-busqueda','filtro-fecha','filtro-estado','filtro-tipo'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', renderTablaBD);
+  document.getElementById(id).addEventListener('change', renderTablaBD);
+});
+
+/* --- Exportar JSON --- */
+document.getElementById('btn-export-json').addEventListener('click', ()=>{
+  const db = obtenerDB();
+  const blob = new Blob([JSON.stringify(db, null, 2)], {type:'application/json'});
+  descargarBlob(blob, `turnos_valledupar_${hoyISO()}.json`);
+  mostrarToast('Base de datos exportada en JSON');
+});
+
+/* --- Exportar Excel (SheetJS) --- */
+document.getElementById('btn-export-xlsx').addEventListener('click', ()=>{
+  const db = obtenerDB();
+  if(db.length === 0){ mostrarToast('No hay datos para exportar', true); return; }
+  const datosHoja = db.map(r=>({
+    Fecha:r.fecha, Ticket:r.ticket, Nombre:r.nombre, Cedula:r.cedula, Celular:r.celular, Correo:r.correo,
+    Edad:r.edad, Genero:r.genero, Tramite:r.tramite, TipoAtencion:r.tipoAtencion, Caja:r.caja||'', Estado:r.estado,
+    HoraRegistro:formatHora(r.horaRegistro), HoraLlamado:formatHora(r.horaLlamado), HoraFin:formatHora(r.horaFin)
+  }));
+  const ws = XLSX.utils.json_to_sheet(datosHoja);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Turnos');
+  XLSX.writeFile(wb, `turnos_valledupar_${hoyISO()}.xlsx`);
+  mostrarToast('Base de datos exportada en Excel');
+});
+
+function descargarBlob(blob, nombreArchivo){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nombreArchivo;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* --- Importar JSON --- */
+document.getElementById('input-import-json').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      const datos = JSON.parse(ev.target.result);
+      if(!Array.isArray(datos)) throw new Error('Formato inválido');
+      guardarDB(datos);
+      mostrarToast('Datos importados correctamente ('+datos.length+' registros)');
+      renderAdminDashboard(); renderTablaBD();
+    }catch(err){
+      mostrarToast('Error al importar: archivo no válido', true);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* --- Reset del sistema --- */
+document.getElementById('btn-reset-sistema').addEventListener('click', ()=>{
+  if(confirm('¿Está seguro de borrar TODOS los turnos del día? Esta acción no se puede deshacer.')){
+    if(confirm('Confirmación final: se eliminará toda la base de datos de turnos. ¿Continuar?')){
+      guardarDB([]);
+      const cfg = obtenerConfig();
+      cfg.contadores = { fecha: hoyISO(), normal:0, pqrf:0 };
+      guardarConfig(cfg);
+      mostrarToast('Sistema reiniciado correctamente');
+      renderAdminDashboard(); renderTablaBD();
+    }
+  }
+});
+
+/* --- Configuración de contraseñas de cajas --- */
+function renderConfigCajas(){
+  const cfg = obtenerConfig();
+  const cont = document.getElementById('config-cajas-grid');
+  cont.innerHTML = CAJAS.map(c=>`
+    <div class="config-caja-item">
+      <label><i class="fa-solid fa-lock"></i> ${c}</label>
+      <div class="fila">
+        <input type="text" data-caja="${c}" value="${cfg.passwords[c] || ''}" placeholder="Contraseña">
+      </div>
+    </div>
+  `).join('');
+}
+document.getElementById('btn-guardar-passwords').addEventListener('click', ()=>{
+  const cfg = obtenerConfig();
+  document.querySelectorAll('#config-cajas-grid input').forEach(inp=>{
+    const caja = inp.dataset.caja;
+    const val = inp.value.trim();
+    if(val) cfg.passwords[caja] = val;
+  });
+  guardarConfig(cfg);
+  mostrarToast('Contraseñas actualizadas correctamente');
+});
+
+/* =====================================================================
+   AVISO AUTOMÁTICO DE SILENCIO EN SALA
+   Se repite cada 10 minutos por voz y cada caja puede repetirlo manualmente
+   ===================================================================== */
+const FRASE_SILENCIO = 'Por favor hacer silencio, recuerde que si pierde su turno debe solicitar otro.';
+const INTERVALO_SILENCIO_MS = 10 * 60 * 1000; // 10 minutos
+
+function anunciarSilencio(){
+  hablar(FRASE_SILENCIO);
+}
+// Temporizador global: funciona mientras la pestaña/app esté abierta, independiente de la vista activa
+setInterval(anunciarSilencio, INTERVALO_SILENCIO_MS);
+
+// Botón de cada caja para repetir el aviso manualmente si hay bulla en la sala
+document.getElementById('btn-repetir-silencio').addEventListener('click', ()=>{
+  anunciarSilencio();
+  mostrarToast('Aviso de silencio reproducido');
+});
+
+/* =====================================================================
+   FOTO DE PERFIL CIRCULAR EN EL BANNER
+   ===================================================================== */
+// Silueta genérica por defecto (SVG en base64, funciona sin internet)
+const AVATAR_POR_DEFECTO = 'data:image/svg+xml;base64,' + btoa(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#173a73"/>
+  <circle cx="50" cy="38" r="18" fill="#39ff8f"/>
+  <path d="M50 60c-22 0-36 12-36 28v12h72V88c0-16-14-28-36-28z" fill="#39ff8f"/>
+</svg>`);
+
+function renderAvatarPerfil(){
+  const cfg = obtenerConfig();
+  document.getElementById('avatar-perfil').src = cfg.fotoPerfil || AVATAR_POR_DEFECTO;
+}
+
+document.getElementById('avatar-perfil').addEventListener('click', ()=>{
+  document.getElementById('avatar-perfil-input').click();
+});
+document.getElementById('avatar-perfil-input').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ mostrarToast('Seleccione un archivo de imagen válido', true); return; }
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const cfg = obtenerConfig();
+    cfg.fotoPerfil = ev.target.result; // se guarda como base64 en localStorage
+    guardarConfig(cfg);
+    renderAvatarPerfil();
+    mostrarToast('Foto de perfil actualizada');
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+/* =====================================================================
+   REPRODUCTOR DE VIDEOS INSTITUCIONALES (VISOR)
+   Reproduce varios videos de forma consecutiva y en bucle
+   ===================================================================== */
+let videoIndiceActual = 0;
+
+function renderReproductorVideos(){
+  const cfg = obtenerConfig();
+  const videos = cfg.videos || [];
+  const wrap = document.getElementById('video-player-wrap');
+  const contador = document.getElementById('video-contador');
+
+  if(videos.length === 0){
+    wrap.innerHTML = `<div class="video-player-vacio"><i class="fa-solid fa-clapperboard"></i>Sin videos configurados.<br>Agréguelos desde Admin → Configuración.</div>`;
+    contador.textContent = '';
+    return;
+  }
+
+  if(videoIndiceActual >= videos.length) videoIndiceActual = 0;
+
+  wrap.innerHTML = `<video id="video-visor-actual" autoplay muted playsinline src="${escapeHTML(videos[videoIndiceActual])}"></video>`;
+  contador.textContent = `Reproduciendo ${videoIndiceActual + 1} de ${videos.length}`;
+
+  const videoEl = document.getElementById('video-visor-actual');
+  // Al terminar un video, pasa al siguiente; si es el último, vuelve al primero (bucle)
+  videoEl.addEventListener('ended', ()=>{
+    videoIndiceActual = (videoIndiceActual + 1) % videos.length;
+    renderReproductorVideos();
+  });
+  // Si un video falla en cargar (URL rota), pasa al siguiente automáticamente
+  videoEl.addEventListener('error', ()=>{
+    if(videos.length > 1){
+      videoIndiceActual = (videoIndiceActual + 1) % videos.length;
+      renderReproductorVideos();
+    }
+  });
+  videoEl.play().catch(()=>{ /* algunos navegadores requieren interacción; el usuario puede tocar el video */ });
+}
+
+/* --- Gestión de videos desde el panel Admin --- */
+function renderListaVideosAdmin(){
+  const cfg = obtenerConfig();
+  const cont = document.getElementById('videos-admin-lista');
+  if(!cfg.videos.length){
+    cont.innerHTML = `<p style="color:var(--gris-400); font-size:12.5px;">Aún no ha agregado videos.</p>`;
+    return;
+  }
+  cont.innerHTML = cfg.videos.map((url, idx)=>`
+    <div class="video-admin-item">
+      <i class="fa-solid fa-video" style="color:var(--verde-neon-fuerte);"></i>
+      <span title="${escapeHTML(url)}">${escapeHTML(url)}</span>
+      <button data-idx="${idx}" class="btn-quitar-video" title="Quitar"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  `).join('');
+  cont.querySelectorAll('.btn-quitar-video').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const cfg2 = obtenerConfig();
+      cfg2.videos.splice(Number(btn.dataset.idx), 1);
+      guardarConfig(cfg2);
+      renderListaVideosAdmin();
+      mostrarToast('Video eliminado de la lista');
+    });
+  });
+}
+
+document.getElementById('btn-agregar-video').addEventListener('click', ()=>{
+  const input = document.getElementById('input-nueva-url-video');
+  const url = input.value.trim();
+  if(!url){ mostrarToast('Ingrese una URL de video válida', true); return; }
+  const cfg = obtenerConfig();
+  cfg.videos.push(url);
+  guardarConfig(cfg);
+  input.value = '';
+  renderListaVideosAdmin();
+  mostrarToast('Video agregado a la lista del visor');
+});
+
+/* =====================================================================
+   INICIALIZACIÓN GENERAL
+   ===================================================================== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  obtenerConfig();          // asegura que exista configuración inicial
+  renderAvatarPerfil();     // pinta la foto de perfil circular del banner
+  renderSelectorCajas();    // pre-renderiza selector de cajas
+  renderVisor();            // pre-renderiza visor por si se navega directo
+  renderReproductorVideos();// pre-renderiza reproductor de videos del visor
+});
+</script>
+
+</body>
+</html>
